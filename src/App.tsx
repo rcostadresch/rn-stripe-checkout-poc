@@ -6,26 +6,95 @@
  * @flow strict-local
  */
 
-import React from 'react';
-import { SafeAreaView, StatusBar, useColorScheme, View } from 'react-native';
+import React, { useState } from 'react';
+import { Button, Linking, SafeAreaView } from 'react-native';
 
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { Line, TouchableOpacityButton, View } from 'styles';
+import { Service } from 'service';
 
 function App(): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  const [isProductOwner, setIsProductOwner] = useState(false);
+  const [isCustomer, setIsCustomer] = useState(false);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
+    <SafeAreaView style={{ flex: 1 }}>
+      <View>
+        <TouchableOpacityButton backgroundColor={'red'}>
+          <Button
+            title="Access as Product Owner"
+            onPress={() => {
+              setIsProductOwner(true);
+              setIsCustomer(false);
+            }}
+            color={'white'}
+          />
+        </TouchableOpacityButton>
+        <TouchableOpacityButton backgroundColor={'blue'}>
+          <Button
+            title="Access as Customer"
+            onPress={() => {
+              setIsProductOwner(false);
+              setIsCustomer(true);
+            }}
+            color={'white'}
+          />
+        </TouchableOpacityButton>
+        <Line />
+      </View>
 
-      <View />
+      {(isProductOwner || isCustomer) && (
+        <>
+          {isProductOwner && (
+            <View>
+              <TouchableOpacityButton backgroundColor={'red'}>
+                <Button
+                  title="Sync Stripe Accounts"
+                  onPress={() => {
+                    Service.upsertGatewayAccount();
+                  }}
+                  color={'white'}
+                />
+              </TouchableOpacityButton>
+
+              <TouchableOpacityButton backgroundColor={'red'}>
+                <Button
+                  title="Create Product"
+                  onPress={() => {
+                    Service.upsertGatewayProduct();
+                  }}
+                  color={'white'}
+                />
+              </TouchableOpacityButton>
+            </View>
+          )}
+          {isCustomer && (
+            <View>
+              <TouchableOpacityButton backgroundColor={'blue'}>
+                <Button
+                  title="Buy Ticket"
+                  onPress={() => {
+                    Linking.openURL(
+                      'https://buy.stripe.com/test_6oE01s4oP86G27S8wB?client_reference_id=cus_OpZujvMGX9GPpn',
+                    );
+                  }}
+                  color={'white'}
+                />
+              </TouchableOpacityButton>
+              <TouchableOpacityButton backgroundColor={'blue'}>
+                <Button
+                  title="View Receipt"
+                  onPress={() => {
+                    Linking.openURL(
+                      'https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xTzBxMTRQcngyUGJ6aWVpKMf2takGMgbyv4xaAIU6LBZ9eQ2jVKVBCx0NGpQPsn3zlBNDYOv4ki6R55UfM0Md7xZNGm9Bj5x-1ax_',
+                    );
+                  }}
+                  color={'white'}
+                />
+              </TouchableOpacityButton>
+            </View>
+          )}
+        </>
+      )}
     </SafeAreaView>
   );
 }
